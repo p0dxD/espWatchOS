@@ -37,7 +37,6 @@ bool usedWifi = false;
 
 void setup(void) {
   Wire.begin(1 /*SDA*/, 3/*SCL*/);
-  u8g2.begin();
   while (!bme.begin()) {
     delay(500); // TODO: blink an error code
   }
@@ -71,7 +70,7 @@ void setup(void) {
     if (!Rtc.GetIsRunning()) {
       Rtc.SetIsRunning(true);
     }
-    
+
     usedWifi = true;
   } else {
     usedWifi = false;
@@ -80,6 +79,10 @@ void setup(void) {
   // disable wifi
   WiFi.forceSleepBegin();
   delay(1);
+  u8g2.initDisplay();
+  if (usedWifi) {
+    u8g2.clearDisplay();
+  }
 }
 
 void loop(void) {
