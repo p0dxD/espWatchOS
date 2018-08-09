@@ -44,7 +44,6 @@ void setup(void) {
   settings.mode = BME280::Mode_Forced;
   bme.setSettings(settings);
 
-  
   if (!Rtc.IsDateTimeValid()) {
 
     uint8_t tries = 0;
@@ -69,18 +68,15 @@ void setup(void) {
     // first subtract 2000/01/01 00:00 as the constructor of RtcDateTime requires this
     // then add two hours to get my local timezone, maybe you need to adapt this line
     Rtc.SetDateTime(RtcDateTime((webUnixTime(client) - 946684800) + (2 * 60 * 60)));
-
-
+    if (!Rtc.GetIsRunning()) {
+      Rtc.SetIsRunning(true);
+    }
+    
     usedWifi = true;
   } else {
     usedWifi = false;
   }
 
-  if (!Rtc.GetIsRunning())
-  {
-    Rtc.SetIsRunning(true);
-  }
-  
   // disable wifi
   WiFi.forceSleepBegin();
   delay(1);
@@ -116,6 +112,5 @@ void loop(void) {
 
   settings.mode = BME280::Mode_Sleep;
   bme.setSettings(settings);
-  // Rtc.SetIsRunning(false);
-  ESP.deepSleep(1000 * 1000 * 10, WAKE_RF_DISABLED); // 10 sec snooze
+  ESP.deepSleep(1000 * 1000 * 60, WAKE_RF_DISABLED); // 60 sec snooze
 }
