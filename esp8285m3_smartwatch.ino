@@ -24,14 +24,14 @@ U8G2_SSD1607_200X200_F_4W_SW_SPI u8g2(U8G2_R2, /* CLK/clock=*/ 14, /* SDI/data=*
 // https://github.com/olikraus/u8g2/wiki/fntlistall#20-pixel-height
 BME280I2C bme;
 BME280I2C::Settings settings(
-   BME280::OSR_X1,
-   BME280::OSR_X1,
-   BME280::OSR_X1,
-   BME280::Mode_Sleep,
-   BME280::StandbyTime_1000ms,
-   BME280::Filter_Off,
-   BME280::SpiEnable_False,
-   0x76 // I2C address. I2C specific.
+  BME280::OSR_X1,
+  BME280::OSR_X1,
+  BME280::OSR_X1,
+  BME280::Mode_Sleep,
+  BME280::StandbyTime_1000ms,
+  BME280::Filter_Off,
+  BME280::SpiEnable_False,
+  0x76 // I2C address. I2C specific.
 );
 bool usedWifi = false;
 
@@ -116,9 +116,9 @@ void loop(void) {
 
   u8g2.sendBuffer();
   u8g2.setPowerSave(1);  // set power save mode: disable charge pump
-  
-  settings.mode = BME280::Mode_Sleep;
-  bme.setSettings(settings);
-  Rtc.SetIsRunning(false);
-  ESP.deepSleep(1000 * 1000 * 60, WAKE_RF_DISABLED); // 10 sec snooze
+
+  // settings.mode = BME280::Mode_Sleep;
+  // bme.setSettings(settings);
+  // Rtc.SetIsRunning(false);
+  ESP.deepSleep(1000 * 1000 * 10, WAKE_RF_DISABLED); // 10 sec snooze
 }
