@@ -44,8 +44,7 @@ void setup(void) {
   settings.mode = BME280::Mode_Forced;
   bme.setSettings(settings);
 
-
-
+  
   if (!Rtc.IsDateTimeValid()) {
 
     uint8_t tries = 0;
@@ -71,22 +70,20 @@ void setup(void) {
     // then add two hours to get my local timezone, maybe you need to adapt this line
     Rtc.SetDateTime(RtcDateTime((webUnixTime(client) - 946684800) + (2 * 60 * 60)));
 
-    if (!Rtc.GetIsRunning())
-    {
-      Rtc.SetIsRunning(true);
-    }
 
-
-    // disable wifi
-    WiFi.forceSleepBegin();
-    delay(1);
     usedWifi = true;
   } else {
-    // disable wifi
-    WiFi.forceSleepBegin();
-    delay(1);
     usedWifi = false;
   }
+
+  if (!Rtc.GetIsRunning())
+  {
+    Rtc.SetIsRunning(true);
+  }
+  
+  // disable wifi
+  WiFi.forceSleepBegin();
+  delay(1);
 }
 
 void loop(void) {
@@ -117,8 +114,8 @@ void loop(void) {
   u8g2.sendBuffer();
   u8g2.setPowerSave(1);  // set power save mode: disable charge pump
 
-  // settings.mode = BME280::Mode_Sleep;
-  // bme.setSettings(settings);
+  settings.mode = BME280::Mode_Sleep;
+  bme.setSettings(settings);
   // Rtc.SetIsRunning(false);
   ESP.deepSleep(1000 * 1000 * 10, WAKE_RF_DISABLED); // 10 sec snooze
 }
