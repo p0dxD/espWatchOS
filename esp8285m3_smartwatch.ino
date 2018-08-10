@@ -36,6 +36,8 @@ BME280I2C::Settings settings(
 bool usedWifi = false;
 
 void setup(void) {
+  pinMode(2, INPUT);
+
   Wire.begin(1 /*SDA*/, 3/*SCL*/);
   while (!bme.begin()) {
     delay(500); // TODO: blink an error code
@@ -102,7 +104,6 @@ void loop(void) {
   u8g2.setDrawColor(1);
   u8g2.drawStr( 4, 20, "@pauls_3d_things");
   u8g2.drawStr( 4, 40, "200x200 e-ink Disp.");
-  u8g2.drawStr( 4, 60, "BME280");
   u8g2.drawStr( 4, 80,  (String("Temp: ") + String(temp) + "C").c_str());
   u8g2.drawStr( 4, 100, (String("Hum:  ") + String(hum) + "%").c_str());
   u8g2.drawStr( 4, 120, (String("Pres:  ") + String(pres) + "mb").c_str());
@@ -112,6 +113,25 @@ void loop(void) {
 
   u8g2.sendBuffer();
   u8g2.setPowerSave(1);  // set power save mode: disable charge pump
+
+  int32_t waits = 5*(1000/50);
+  int btnStateOld = -1;
+  while (waits > 0) {
+    waits--;
+    delay(50);
+    int btnState = digitalRead(2);
+
+    if (btnState != btnStateOld) {
+      btnStateOld = btnState;
+      u8g2.setPowerSave(0);  // before drawing, enable charge pump (req. 300ms)
+      u8g2.clearBuffer();
+      u8g2.setFont(u8g2_font_fub11_tf);
+      u8g2.setDrawColor(1);
+      u8g2.drawStr( 4, 60, (String("Button:  ") + (btnState == HIGH ? "HIGH" : "LOW")).c_str());
+      u8g2.sendBuffer();
+      u8g2.setPowerSave(1);  // set power save mode: disable charge pump
+    }
+  }
 
   settings.mode = BME280::Mode_Sleep;
   bme.setSettings(settings);
