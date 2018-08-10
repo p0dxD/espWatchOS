@@ -2,9 +2,13 @@
 
 #include "ESPWatchOS.h"
 #include "OSTime.h"
+#include "drop.h"
+#include "logo.h"
+#include "sun.h"
+#include "thermo.h"
 #include "watchface.h"
-#include "watchface_square.h"
 #include "watchface_roman.h"
+#include "watchface_square.h"
 #include <Arduino.h>
 #include <Geometry.h>
 #include <SPI.h>
@@ -124,22 +128,24 @@ void drawScreen(int screenPtr) {
                  String(now.Hour()) + //
                  ":" + (now.Minute() < 10 ? "0" : "") + String(now.Minute()));
     drawBigCentered(str);
-    drawSmall(String("Time"), 0, 200, true, false, u8g2_font_inb16_mf, 14, 26);
     break;
   case 2:
+    s.drawXBM(76, 24, 48, 48, thermo_bits);
     drawBigCentered(String(temp, 1));
-    drawSmall(String("Temp. (C)"), 0, 200, true, false, u8g2_font_inb16_mf, 14,
+    drawSmall(String("Temp. (C)"), 0, 190, true, false, u8g2_font_inb16_mf, 14,
               26);
     break;
   case 3:
+    s.drawXBM(76, 24, 48, 48, drop_bits);
     drawBigCentered(String(hum, 1));
-    drawSmall(String("Humid. (%)"), 0, 200, true, false, u8g2_font_inb16_mf, 14,
+    drawSmall(String("Humid. (%)"), 0, 190, true, false, u8g2_font_inb16_mf, 14,
               26);
 
     break;
   case 4:
+    s.drawXBM(76, 24, 48, 48, sun_bits);
     drawBigCentered(String(pres, 1));
-    drawSmall(String("Pres.(mb)"), 0, 200, true, false, u8g2_font_inb16_mf, 14,
+    drawSmall(String("Pres.(mb)"), 0, 190, true, false, u8g2_font_inb16_mf, 14,
               26);
     break;
   case 5:
@@ -152,25 +158,8 @@ void drawScreen(int screenPtr) {
     drawWatchFace(faceroman_bits);
     break;
   case 0:
-    s.setFont(u8g2_font_fub11_tf);
-    s.setDrawColor(1);
-    s.drawStr(4, 20, "@pauls_3d_things");
-    s.drawStr(4, 40, "200x200 e-ink Disp.");
-    s.drawStr(4, 60, "BME280 Sensor");
-    s.drawStr(4, 80, (String("Temp: ") + String(temp) + "C").c_str());
-    s.drawStr(4, 100, (String("Hum:  ") + String(hum) + "%").c_str());
-    s.drawStr(4, 120, (String("Pres:  ") + String(pres) + "mb").c_str());
-    s.drawStr(4, 140,
-              (String("Date:  ") + String(now.Year()) + "/" +
-               String(now.Month()) + "/" + String(now.Day()))
-                  .c_str());
-    s.drawStr(
-        4, 160,
-        (String("Time: ") + String(now.Hour()) + ":" + String(now.Minute()))
-            .c_str());
-    s.drawStr(
-        4, 180,
-        (String("Used Wifi: ") + (watch.usedWifi() ? "yes" : "no")).c_str());
+  default:
+    s.drawXBM(0, 0, 200, 200, logo_bits);
   }
   watch.endDraw();
 }
