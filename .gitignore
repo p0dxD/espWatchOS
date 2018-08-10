@@ -7,3 +7,5 @@ defines.h
 .vscode/launch.json
 src/defines.h
 .vscode/
+assets/face.*
+assets/watchface.blend1

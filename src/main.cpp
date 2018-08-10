@@ -4,12 +4,13 @@
 #include "OSTime.h"
 #include "watchface.h"
 #include "watchface_square.h"
+#include "watchface_roman.h"
 #include <Arduino.h>
 #include <Geometry.h>
 #include <SPI.h>
 #include <Wire.h>
 
-#define NUM_SCREENS 7;
+#define NUM_SCREENS 8;
 #define DEFAULT_WAKETIME_ADD 5;
 
 ESPWatchOS watch;
@@ -146,6 +147,9 @@ void drawScreen(int screenPtr) {
     break;
   case 6:
     drawWatchFace(facesquare_bits);
+    break;
+  case 7:
+    drawWatchFace(faceroman_bits);
     break;
   case 0:
     s.setFont(u8g2_font_fub11_tf);
