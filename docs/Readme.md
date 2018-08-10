@@ -2,6 +2,8 @@
 
 ... or what ever this will be.
 
+Update: [VIDEO](https://www.instagram.com/p/BmUH-vqA_Hz/?taken-by=pauls_3d_things)
+
 ## Initial Breadboard Tests:
 
 What works:
