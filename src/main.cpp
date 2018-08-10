@@ -1,13 +1,15 @@
 
 
+#include "ESPWatchOS.h"
+#include "OSTime.h"
+#include "watchface.h"
+#include "watchface_square.h"
 #include <Arduino.h>
+#include <Geometry.h>
 #include <SPI.h>
 #include <Wire.h>
 
-#include "ESPWatchOS.h"
-#include "OSTime.h"
-
-#define NUM_SCREENS 5;
+#define NUM_SCREENS 7;
 #define DEFAULT_WAKETIME_ADD 5;
 
 ESPWatchOS watch;
@@ -21,39 +23,136 @@ RtcDateTime now;
 float pres = NAN;
 float temp = NAN;
 float hum = NAN;
-long wakeTimeSeconds = 4;
+long wakeTimeSeconds = 6;
 
+uint8_t yMid(uint8_t fontHeight) { return 200 / 2 + (fontHeight / 2); }
+
+uint8_t xMid(uint8_t fontWidth, uint8_t len) {
+  // -1 looks better
+  return (200 / 2) - (len * fontWidth / 2) - 1;
+}
+
+void drawBigCentered(String str) {
+  if (str.length() <= 6) {
+    watch.screen.setFont(u8g2_font_inb38_mr);
+    watch.screen.drawStr(xMid(30, str.length()), yMid(51), str.c_str());
+  } else if (str.length() <= 8) {
+    watch.screen.setFont(u8g2_font_inb30_mr);
+    watch.screen.drawStr(xMid(24, str.length()), yMid(41), str.c_str());
+  } else if (str.length() <= 10) {
+    watch.screen.setFont(u8g2_font_inb24_mr);
+    watch.screen.drawStr(xMid(20, str.length()), yMid(33), str.c_str());
+  } else {
+    watch.screen.setFont(u8g2_font_inb16_mf);
+    watch.screen.drawStr(xMid(14, str.length()), yMid(26), str.c_str());
+  }
+}
+
+void drawSmall(String str, uint8_t offsetX, uint8_t offsetY, bool xCentered,
+               bool yCentered, const uint8_t *font, uint8_t fontWidth,
+               uint8_t fontHeight) {
+  uint8_t x = (xCentered ? xMid(fontWidth, str.length()) : 0) + offsetX;
+  uint8_t y = (yCentered ? yMid(fontHeight) : 0) + offsetY;
+  watch.screen.setFont(font);
+  watch.screen.drawStr(x, y, str.c_str());
+}
+
+void drawHandle(float width, float length, float div, Rotation r, Point c) {
+  Point p0, p1, p2, p3;
+  p0.X() = 0;
+  p0.Y() = 0;
+
+  p1.X() = -width / 2;
+  p1.Y() = -length * div;
+
+  p2.X() = width / 2;
+  p2.Y() = -length * div;
+
+  p3.X() = 0;
+  p3.Y() = -length;
+
+  p0 = r * p0 + c;
+  p1 = r * p1 + c;
+  p2 = r * p2 + c;
+  p3 = r * p3 + c;
+
+  watch.screen.drawLine(p0.X(), p0.Y(), p1.X(), p1.Y());
+  watch.screen.drawLine(p0.X(), p0.Y(), p2.X(), p2.Y());
+  watch.screen.drawLine(p3.X(), p3.Y(), p1.X(), p1.Y());
+  watch.screen.drawLine(p3.X(), p3.Y(), p2.X(), p2.Y());
+}
+
+void drawWatchFace(const uint8_t *bits) {
+
+  Point c;
+  c.X() = 100;
+  c.Y() = 100;
+
+  Rotation rh, rm;
+  rh.RotateZ(2 * PI *
+             (((now.Hour() > 12 ? now.Hour() - 12 : now.Hour()) / 12.0) +
+              (now.Minute() / 60.0) / 12.0));
+  rm.RotateZ(2 * PI * (now.Minute() / 60.0));
+
+  watch.screen.drawXBM(0, 0, 200, 200, bits);
+  watch.screen.setFont(u8g2_font_fub14_tn);
+  watch.screen.drawStr(
+      134, 107,
+      String(String(now.Day() < 9 ? " " : "") + String(now.Day())).c_str());
+  drawSmall(String(temp, 1) + "C", 0, 125, true, false, u8g2_font_profont15_mf,
+            7, 15);
+
+  for (int i = 0; i < 9; i++) {
+    drawHandle(i, 50, 0.6, rh, c);
+  }
+
+  for (int i = 0; i < 5; i++) {
+    drawHandle(i, 75, 0.4, rm, c);
+  }
+}
 // render functions
 void drawScreen(int screenPtr) {
+  String str;
   watch.beginDraw();
   U8G2 s = watch.screen; // save some space on each line
 
   switch (screenPtr) {
   case 1:
-    s.setFont(u8g2_font_logisoso46_tn);
-    s.drawStr(200 / 4, 200 / 2 - 23,
-              ((now.Hour() < 10 ? String(0) : String("")) +
-               String(now.Hour()) + //
-               ":" + (now.Minute() < 10 ? "0" : "") + String(now.Minute()))
-                  .c_str());
+    s.setFont(u8g2_font_inb53_mr);
+    str = String((now.Hour() < 10 ? String(0) : String("")) +
+                 String(now.Hour()) + //
+                 ":" + (now.Minute() < 10 ? "0" : "") + String(now.Minute()));
+    drawBigCentered(str);
+    drawSmall(String("Time"), 0, 200, true, false, u8g2_font_inb16_mf, 14, 26);
     break;
   case 2:
-    s.setFont(u8g2_font_logisoso46_tn);
-    s.drawStr(200 / 4, 200 / 2 - 23, (String(temp) + " °C").c_str());
+    drawBigCentered(String(temp, 1));
+    drawSmall(String("Temp. (C)"), 0, 200, true, false, u8g2_font_inb16_mf, 14,
+              26);
     break;
   case 3:
-    s.setFont(u8g2_font_logisoso46_tn);
-    s.drawStr(200 / 4, 200 / 2 - 23, (String(hum) + " %").c_str());
+    drawBigCentered(String(hum, 1));
+    drawSmall(String("Humid. (%)"), 0, 200, true, false, u8g2_font_inb16_mf, 14,
+              26);
+
     break;
   case 4:
-    s.setFont(u8g2_font_logisoso46_tn);
-    s.drawStr(200 / 4, 200 / 2 - 23, (String(pres) + " mb").c_str());
+    drawBigCentered(String(pres, 1));
+    drawSmall(String("Pres.(mb)"), 0, 200, true, false, u8g2_font_inb16_mf, 14,
+              26);
+    break;
+  case 5:
+    drawWatchFace(face_bits);
+    break;
+  case 6:
+    drawWatchFace(facesquare_bits);
     break;
   case 0:
     s.setFont(u8g2_font_fub11_tf);
     s.setDrawColor(1);
     s.drawStr(4, 20, "@pauls_3d_things");
     s.drawStr(4, 40, "200x200 e-ink Disp.");
+    s.drawStr(4, 60, "BME280 Sensor");
     s.drawStr(4, 80, (String("Temp: ") + String(temp) + "C").c_str());
     s.drawStr(4, 100, (String("Hum:  ") + String(hum) + "%").c_str());
     s.drawStr(4, 120, (String("Pres:  ") + String(pres) + "mb").c_str());
@@ -85,13 +184,13 @@ void loop(void) {
   // stay awake for user input (to change screens)
   while (((long)tick.getUptimeSeconds()) - bootTime < wakeTimeSeconds) {
     tick.tick();
-    delay(50);
+    delay(10);
 
     if (watch.isButtonDown()) {
       wakeTimeSeconds += DEFAULT_WAKETIME_ADD;
       screenPtr = (screenPtr + 1) % NUM_SCREENS;
       watch.setMemory(0, screenPtr);
-      
+
       drawScreen(screenPtr);
     }
   }
