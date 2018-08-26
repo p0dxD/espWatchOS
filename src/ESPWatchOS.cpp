@@ -31,7 +31,7 @@ BME280I2C::Settings settings(BME280::OSR_X1, BME280::OSR_X1, BME280::OSR_X1,
                              0x76 // I2C address. I2C specific.
 );
 
-U8G2_SSD1607_200X200_F_4W_SW_SPI u8g2(U8G2_R2, PIN_CLK, PIN_SDI, PIN_CS,
+U8G2_SSD1607_200X200_F_4W_SW_SPI u8g2(U8G2_R3, PIN_CLK, PIN_SDI, PIN_CS,
                                       PIN_DC);
 
 void ESPWatchOS::begin() {
