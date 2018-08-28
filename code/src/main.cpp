@@ -2,13 +2,13 @@
 
 #include "ESPWatchOS.h"
 #include "OSTime.h"
-#include "drop.h"
-#include "logo.h"
-#include "sun.h"
-#include "thermo.h"
-#include "watchface.h"
-#include "watchface_roman.h"
-#include "watchface_square.h"
+#include "images/drop.h"
+#include "images/logo.h"
+#include "images/sun.h"
+#include "images/thermo.h"
+#include "images/watchface.h"
+#include "images/watchface_roman.h"
+#include "images/watchface_square.h"
 #include <Arduino.h>
 #include <Geometry.h>
 #include <SPI.h>
