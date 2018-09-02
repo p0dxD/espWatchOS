@@ -74,8 +74,15 @@ void ESPWatchOS::begin() {
       Rtc.SetIsRunning(true);
     }
 
+    presHistory.init();
+    tempHistory.init();
+    humHistory.init();
     _usedWifi = true;
   } else {
+
+    presHistory.load(32);
+    tempHistory.load(32 + presHistory.memSize());
+    humHistory.load(32 + presHistory.memSize() * 2);
     _usedWifi = false;
   }
 
@@ -101,6 +108,17 @@ uint8_t ESPWatchOS::getMemory(uint8_t memoryAddress) {
 void ESPWatchOS::readSensors(float &pres, float &temp, float &hum) {
   // if you dont like metrics: thange the params below
   bme.read(pres, temp, hum, BME280::TempUnit_Celsius, BME280::PresUnit_hPa);
+}
+
+void ESPWatchOS::updateSensorHistory() {
+
+  // TODO: only do this hourly!
+  float pres = NAN, temp = NAN, hum = NAN;
+
+  bme.read(pres, temp, hum, BME280::TempUnit_Celsius, BME280::PresUnit_hPa);
+  presHistory.addValue(pres);
+  tempHistory.addValue(temp);
+  humHistory.addValue(hum);
 }
 
 bool ESPWatchOS::isButtonDown() {
@@ -132,6 +150,10 @@ void ESPWatchOS::testDraw() {
 }
 
 void ESPWatchOS::sleep(uint64_t sleepMicros) {
+  presHistory.save(32);
+  tempHistory.save(32 + presHistory.memSize());
+  humHistory.save(32 + presHistory.memSize() * 2);
+
   settings.mode = BME280::Mode_Sleep;
   bme.setSettings(settings);
   ESP.deepSleep(sleepMicros, WAKE_RF_DISABLED); // 60 sec snooze

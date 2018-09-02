@@ -5,19 +5,27 @@
 
 #include <RtcDS1307.h> // Library manager -> Rtc_by_Makuna
 #include <U8g2lib.h>   // Library manager -> U8g2 by oliver
+#include "SensorHistory.h"
 
 class ESPWatchOS {
 private:
   bool _usedWifi = false;
 public:
+  SensorHistory presHistory;
+  SensorHistory tempHistory;
+  SensorHistory humHistory;
   U8G2 screen;
+  
   void begin();
   void sleep(uint64_t sleepMicros);
 
   RtcDateTime getDateTime();
   void setMemory(uint8_t memoryAddress, uint8_t value);
   uint8_t getMemory(uint8_t memoryAddress);
+
   void readSensors(float &pres, float &temp, float &hum);
+  void updateSensorHistory();
+
   bool isButtonDown();
   bool usedWifi();
 

@@ -2,6 +2,7 @@
 
 #include "ESPWatchOS.h"
 #include "OSTime.h"
+#include "SensorHistory.h"
 #include "images/drop.h"
 #include "images/logo.h"
 #include "images/sun.h"
@@ -40,19 +41,15 @@ uint8_t xMid(uint8_t fontWidth, uint8_t len) {
 void drawBigCentered(String str) {
   if (str.length() <= 6) {
     watch.screen.setFont(u8g2_font_inb38_mr);
-    // watch.screen.setDrawColor(mode);
     watch.screen.drawStr(xMid(30, str.length()), yMid(51), str.c_str());
   } else if (str.length() <= 8) {
     watch.screen.setFont(u8g2_font_inb30_mr);
-    // watch.screen.setDrawColor(mode);
     watch.screen.drawStr(xMid(24, str.length()), yMid(41), str.c_str());
   } else if (str.length() <= 10) {
     watch.screen.setFont(u8g2_font_inb24_mr);
-    // watch.screen.setDrawColor(mode);
     watch.screen.drawStr(xMid(20, str.length()), yMid(33), str.c_str());
   } else {
     watch.screen.setFont(u8g2_font_inb16_mf);
-    // watch.screen.setDrawColor(mode);
     watch.screen.drawStr(xMid(14, str.length()), yMid(26), str.c_str());
   }
 }
@@ -140,6 +137,17 @@ void drawScreen(int screenPtr) {
                  String(now.Hour()) + //
                  ":" + (now.Minute() < 10 ? "0" : "") + String(now.Minute()));
     drawBigCentered(str);
+
+    watch.updateSensorHistory();
+    drawSmall(String("PresH: ") + String(watch.presHistory.getSize()) + " " +
+                  String(watch.presHistory.getAverage()),
+              0, 150, false, false, u8g2_font_inb16_mf, 14, 26);
+    drawSmall(String("TempH: ") + String(watch.presHistory.getSize()) + " " +
+                  String(watch.tempHistory.getAverage()),
+              0, 170, false, false, u8g2_font_inb16_mf, 14, 26);
+    drawSmall(String("HumH: ") + String(watch.presHistory.getSize()) + " " +
+                  String(watch.humHistory.getAverage()),
+              0, 190, false, false, u8g2_font_inb16_mf, 14, 26);
     break;
   case 2:
     s.drawXBM(76, 24, 48, 48, thermo_bits);
