@@ -175,9 +175,9 @@ void drawScreen(int screenPtr) {
               0, 20, true, false, u8g2_font_t0_22_tf, 11, 21);
 
     drawBigCentered(str);
-    //drawSmall(str, 0, 0, false, true, u8g2_font_logisoso54_tf, 69, 85);
+    // drawSmall(str, 0, 0, false, true, u8g2_font_logisoso54_tf, 69, 85);
 
-    watch.updateSensorHistory();
+    watch.updateSensorHistory(false);
     drawSmall(String(watch.presHistory.getLastValue(), 1) + " (" +
                   String(watch.presHistory.getAverage(), 1) + ")",
               101, 142, false, false, u8g2_font_t0_11_tf, 6, 11);
@@ -257,5 +257,10 @@ void loop(void) {
     }
   }
 
-  watch.sleep(1000 * 1000 * 60 /* 1 minute */);
+  uint8_t h = watch.getDateTime().Hour();
+  if (h > 9 && h < 21) {
+    watch.sleep(1000 * 1000 * 60 /* 1 minute */);
+  } else {
+    watch.sleep(1000 * 1000 * 60 * 30 /* 30 minutes */);
+  }
 }

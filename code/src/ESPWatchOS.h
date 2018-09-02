@@ -25,7 +25,7 @@ public:
   uint8_t getMemory(uint8_t memoryAddress);
 
   void readSensors(float &pres, float &temp, float &hum);
-  void updateSensorHistory();
+  void updateSensorHistory(bool forceSave);
 
   bool isButtonDown();
   bool usedWifi();

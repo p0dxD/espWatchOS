@@ -17,6 +17,8 @@
 
 #define PIN_BTN 2
 
+#define SENSOR_INTERVAL_SECONDS 60 * 60 * 1 // 1h
+
 // Sources:
 // https://github.com/olikraus/u8g2/wiki/gallery#5-feb-2017-ssd1607-200x200-eink
 // https://github.com/olikraus/u8g2/wiki/u8g2setupcpp
@@ -77,6 +79,7 @@ void ESPWatchOS::begin() {
     presHistory.init();
     tempHistory.init();
     humHistory.init();
+    updateSensorHistory(true);
     _usedWifi = true;
   } else {
 
@@ -101,6 +104,7 @@ RtcDateTime ESPWatchOS::getDateTime() { return Rtc.GetDateTime(); }
 void ESPWatchOS::setMemory(uint8_t memoryAddress, uint8_t value) {
   Rtc.SetMemory(memoryAddress, value);
 }
+
 uint8_t ESPWatchOS::getMemory(uint8_t memoryAddress) {
   return Rtc.GetMemory(memoryAddress);
 }
@@ -110,15 +114,30 @@ void ESPWatchOS::readSensors(float &pres, float &temp, float &hum) {
   bme.read(pres, temp, hum, BME280::TempUnit_Celsius, BME280::PresUnit_hPa);
 }
 
-void ESPWatchOS::updateSensorHistory() {
-
-  // TODO: only do this hourly!
+void ESPWatchOS::updateSensorHistory(bool forceSave) {
   float pres = NAN, temp = NAN, hum = NAN;
+  uint32_t lastSave = ((uint32_t)Rtc.GetMemory(1)) << 24   //
+                      | ((uint32_t)Rtc.GetMemory(2)) << 16 //
+                      | ((uint32_t)Rtc.GetMemory(3)) << 8  //
+                      | ((uint32_t)Rtc.GetMemory(4));
+
+  uint32_t now = Rtc.GetDateTime().Epoch32Time();
 
   bme.read(pres, temp, hum, BME280::TempUnit_Celsius, BME280::PresUnit_hPa);
   presHistory.addValue(pres);
   tempHistory.addValue(temp);
   humHistory.addValue(hum);
+
+  if (forceSave || now - lastSave > SENSOR_INTERVAL_SECONDS) {
+    presHistory.save(0);
+    tempHistory.save(0 + presHistory.memSize());
+    humHistory.save(0 + presHistory.memSize() + tempHistory.memSize());
+
+    Rtc.SetMemory(1, (uint8_t)(now >> 24));
+    Rtc.SetMemory(2, (uint8_t)(now >> 16));
+    Rtc.SetMemory(3, (uint8_t)(now >> 8));
+    Rtc.SetMemory(4, (uint8_t)(now));
+  }
 }
 
 bool ESPWatchOS::isButtonDown() {
@@ -150,10 +169,6 @@ void ESPWatchOS::testDraw() {
 }
 
 void ESPWatchOS::sleep(uint64_t sleepMicros) {
-  presHistory.save(0);
-  tempHistory.save(0 + presHistory.memSize());
-  humHistory.save(0 + presHistory.memSize() + tempHistory.memSize());
-
   settings.mode = BME280::Mode_Sleep;
   bme.setSettings(settings);
   ESP.deepSleep(sleepMicros, WAKE_RF_DISABLED); // 60 sec snooze
