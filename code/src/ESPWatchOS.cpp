@@ -80,9 +80,9 @@ void ESPWatchOS::begin() {
     _usedWifi = true;
   } else {
 
-    presHistory.load(32);
-    tempHistory.load(32 + presHistory.memSize());
-    humHistory.load(32 + presHistory.memSize() * 2);
+    presHistory.load(0);
+    tempHistory.load(0 + presHistory.memSize());
+    humHistory.load(0 + presHistory.memSize() + humHistory.memSize());
     _usedWifi = false;
   }
 
@@ -150,9 +150,9 @@ void ESPWatchOS::testDraw() {
 }
 
 void ESPWatchOS::sleep(uint64_t sleepMicros) {
-  presHistory.save(32);
-  tempHistory.save(32 + presHistory.memSize());
-  humHistory.save(32 + presHistory.memSize() * 2);
+  presHistory.save(0);
+  tempHistory.save(0 + presHistory.memSize());
+  humHistory.save(0 + presHistory.memSize() + tempHistory.memSize());
 
   settings.mode = BME280::Mode_Sleep;
   bme.setSettings(settings);

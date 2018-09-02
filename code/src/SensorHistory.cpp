@@ -46,13 +46,23 @@ uint8_t SensorHistory::getSize() {
 
   return ret;
 };
-uint8_t SensorHistory::memSize() {
-    return sizeof(_data);
-}
+
+uint8_t SensorHistory::memSize() { return sizeof(_data); }
+
 float SensorHistory::getValue(uint8_t index) {
   return _data.values[(_data.start + index) % SENSOR_HISTORY_SIZE];
 };
-float SensorHistory::getLastValue() { return _data.values[_data.end]; };
+
+float SensorHistory::getLastValue() {
+  return _data.values[(_data.end - 1) % SENSOR_HISTORY_SIZE];
+};
+
+void SensorHistory::copyValues(float *values) {
+  for (uint8_t i = 0; i < getSize(); i++) {
+    values[i] = _data.values[(_data.start + i) % SENSOR_HISTORY_SIZE];
+  }
+}
+
 float SensorHistory::getAverage() {
   float sum = 0;
   uint8_t size = getSize();
@@ -62,4 +72,4 @@ float SensorHistory::getAverage() {
   }
 
   return sum / size;
-};
+}

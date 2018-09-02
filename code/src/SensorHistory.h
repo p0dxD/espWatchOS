@@ -29,6 +29,7 @@ public:
   uint8_t memSize();
   float getValue(uint8_t index);
   float getLastValue();
+  void copyValues(float* values);
   float getAverage();
 };
 

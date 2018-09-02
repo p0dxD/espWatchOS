@@ -3,19 +3,20 @@
 
 #define DEBOUNCE_MILLIS 125
 
+#include "SensorHistory.h"
 #include <RtcDS1307.h> // Library manager -> Rtc_by_Makuna
 #include <U8g2lib.h>   // Library manager -> U8g2 by oliver
-#include "SensorHistory.h"
 
 class ESPWatchOS {
 private:
   bool _usedWifi = false;
+
 public:
-  SensorHistory presHistory;
-  SensorHistory tempHistory;
-  SensorHistory humHistory;
+  SensorHistory presHistory = SensorHistory();
+  SensorHistory tempHistory = SensorHistory();
+  SensorHistory humHistory = SensorHistory();
   U8G2 screen;
-  
+
   void begin();
   void sleep(uint64_t sleepMicros);
 

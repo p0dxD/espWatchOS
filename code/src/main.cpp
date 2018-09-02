@@ -1,5 +1,6 @@
 
 
+#include "ChartViews.h"
 #include "ESPWatchOS.h"
 #include "OSTime.h"
 #include "SensorHistory.h"
@@ -29,6 +30,13 @@ RtcDateTime now;
 float pres = NAN;
 float temp = NAN;
 float hum = NAN;
+float presValues[SENSOR_HISTORY_SIZE];
+float tempValues[SENSOR_HISTORY_SIZE];
+float humValues[SENSOR_HISTORY_SIZE];
+
+LineChart chartTemp = LineChart(0, 132, 100, 68, 5);
+LineChart chartPres = LineChart(100, 132, 100, 68, 30);
+
 long wakeTimeSeconds = 6;
 
 uint8_t yMid(uint8_t fontHeight) { return (200 / 2) + (fontHeight / 2); }
@@ -119,6 +127,7 @@ void drawWatchFace(const uint8_t *bits) {
 // render functions
 void drawScreen(int screenPtr) {
   String str;
+  String dow;
   watch.beginDraw();
   U8G2 s = watch.screen; // save some space on each line
 
@@ -132,22 +141,62 @@ void drawScreen(int screenPtr) {
   case 1:
 
     /* write background pattern, then: */
-
     str = String((now.Hour() < 10 ? String(0) : String("")) +
                  String(now.Hour()) + //
                  ":" + (now.Minute() < 10 ? "0" : "") + String(now.Minute()));
+
+    switch (now.DayOfWeek()) {
+    case 1:
+      dow = "Monday";
+      break;
+    case 2:
+      dow = "Tuesday";
+      break;
+    case 3:
+      dow = "Wednesday";
+      break;
+    case 4:
+      dow = "Thursday";
+      break;
+    case 5:
+      dow = "Friday";
+      break;
+    case 6:
+      dow = "Saturday";
+      break;
+    case 0:
+      dow = "Sunday";
+      break;
+    default:
+      dow = "No-Day";
+    }
+    drawSmall(dow + " " + String(now.Year()) + "-" + String(now.Month()) + "-" +
+                  String(now.Day()),
+              0, 20, true, false, u8g2_font_t0_22_tf, 11, 21);
+
     drawBigCentered(str);
+    //drawSmall(str, 0, 0, false, true, u8g2_font_logisoso54_tf, 69, 85);
 
     watch.updateSensorHistory();
-    drawSmall(String("PresH: ") + String(watch.presHistory.getSize()) + " " +
-                  String(watch.presHistory.getAverage()),
-              0, 150, false, false, u8g2_font_inb16_mf, 14, 26);
-    drawSmall(String("TempH: ") + String(watch.presHistory.getSize()) + " " +
-                  String(watch.tempHistory.getAverage()),
-              0, 170, false, false, u8g2_font_inb16_mf, 14, 26);
-    drawSmall(String("HumH: ") + String(watch.presHistory.getSize()) + " " +
-                  String(watch.humHistory.getAverage()),
-              0, 190, false, false, u8g2_font_inb16_mf, 14, 26);
+    drawSmall(String(watch.presHistory.getLastValue(), 1) + " (" +
+                  String(watch.presHistory.getAverage(), 1) + ")",
+              101, 142, false, false, u8g2_font_t0_11_tf, 6, 11);
+    drawSmall(String(watch.tempHistory.getLastValue(), 1) + " (" +
+                  String(watch.tempHistory.getAverage(), 1) + ")",
+              1, 142, false, false, u8g2_font_t0_11_tf, 6, 11);
+
+    watch.presHistory.copyValues(presValues);
+    watch.tempHistory.copyValues(tempValues);
+    watch.humHistory.copyValues(humValues);
+
+    chartPres.draw(&watch.screen, presValues, watch.presHistory.getSize(),
+                   SENSOR_HISTORY_SIZE);
+    chartTemp.draw(&watch.screen, tempValues, watch.tempHistory.getSize(),
+                   SENSOR_HISTORY_SIZE);
+
+    // humChart.draw(&watch.screen, humValues, watch.humHistory.getSize(),
+    //               SENSOR_HISTORY_SIZE);
+
     break;
   case 2:
     s.drawXBM(76, 24, 48, 48, thermo_bits);
