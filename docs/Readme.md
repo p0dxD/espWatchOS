@@ -40,15 +40,26 @@ If you want to join this project and help developing the hardware + code, these 
 
 ## Known Issues
 
-PCB REV.9:
+PCB REV.10:
 
-- the button footprints on the PCB are not 100% correct, but it's doable ;)
-- the pins 4+5 on the usb footprint are switched (just short them to get charging to work)
-- cleanup & upload the KiCad files
+- the button footprints have been updated, they might fit now
+- the pins 4+5 on the usb footprint are corrected
 
 ## How I built it
 
 <a href="https://youtu.be/Sn--Rn5TsQE"><img src="images/youtube.png"></a>
+
+## Details
+
+### Schematics
+
+I know the schematics can be cleaned up. I haven't spent that much time with KiCad, so if you have advice, please let me know. The same goes for the PCBs.
+
+<a href="images/schematic.png"><img src="images/schematic.png" width="80%"></a>
+
+### PCBs
+
+<img src="images/front.jpeg" width="40%"><img src="images/back.jpeg" width="40%">
 
 ## Experiments/Notes
 
