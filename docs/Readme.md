@@ -57,7 +57,7 @@ I know the schematics can be cleaned up. I haven't spent that much time with KiC
 
 <a href="images/schematic.png"><img src="images/schematic.png" width="80%"></a>
 
-### PCBs
+### PCB
 
 <img src="images/front.jpeg" width="40%"><img src="images/back.jpeg" width="40%">
 
